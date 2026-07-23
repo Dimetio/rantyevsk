@@ -1,41 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-import { auth } from '@/lib/auth'
+const PUBLIC_PATHS = ['/', '/auth', '/api/auth']
 
-/** Middleware для проверки ролей и редиректа. */
-export default auth((req) => {
+/** Проверяет, является ли путь публичным. */
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+}
+
+/**
+ * Лёгкий middleware — проверяет наличие сессионной cookie.
+ * Проверка ролей делается в layout/page на серверной стороне.
+ */
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // Публичные маршруты
-  if (
-    pathname === '/' ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/api/auth')
-  ) {
+  if (isPublicPath(pathname)) {
     return NextResponse.next()
   }
 
-  // Если не авторизован — на логин
-  if (!req.auth) {
+  const sessionToken =
+    req.cookies.get('authjs.session-token')?.value ||
+    req.cookies.get('__Secure-authjs.session-token')?.value
+
+  if (!sessionToken) {
     const loginUrl = new URL('/auth/login', req.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  const role = req.auth.user?.role
-
-  // Собственник не должен попадать на /tenant
-  if (role === 'OWNER' && pathname.startsWith('/tenant')) {
-    return NextResponse.redirect(new URL('/owner', req.url))
-  }
-
-  // Арендатор не должен попадать на /owner
-  if (role === 'TENANT' && pathname.startsWith('/owner')) {
-    return NextResponse.redirect(new URL('/tenant', req.url))
-  }
-
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
