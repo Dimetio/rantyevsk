@@ -30,7 +30,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   ownedProperties     Property[]           @relation("OwnerProperties")
-  rentedProperty      Property?            @relation("TenantProperty")
+  rentedProperties     Property[]           @relation("TenantProperty")
   rentalRequests      RentalRequest[]      @relation("TenantRequests")
   initiatedTerminations TerminationRequest[] @relation("InitiatedTerminations")
 
@@ -55,7 +55,7 @@ model Property {
   ownerId  String
   owner    User   @relation("OwnerProperties", fields: [ownerId], references: [id])
 
-  tenantId String? @unique
+  tenantId String?
   tenant   User?  @relation("TenantProperty", fields: [tenantId], references: [id])
 
   rentalRequests      RentalRequest[]      @relation("PropertyRequests")
