@@ -88,12 +88,11 @@ export async function POST(request: Request) {
       )
     }
 
-    const existingRequest = await prisma.rentalRequest.findUnique({
+    const existingRequest = await prisma.rentalRequest.findFirst({
       where: {
-        tenantId_propertyId: {
-          tenantId: session.user.id,
-          propertyId,
-        },
+        tenantId: session.user.id,
+        propertyId,
+        status: 'PENDING',
       },
     })
 
