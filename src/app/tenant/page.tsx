@@ -38,7 +38,10 @@ export default async function TenantDashboard() {
   })
 
   const rentalRequests = await prisma.rentalRequest.findMany({
-    where: { tenantId: session.user.id },
+    where: {
+      tenantId: session.user.id,
+      status: 'PENDING',
+    },
     include: {
       property: {
         select: { id: true, title: true, address: true, rentPrice: true },
@@ -113,7 +116,9 @@ export default async function TenantDashboard() {
 
         <AvailableProperties
           properties={serializedAvailableProperties}
-          existingRequestPropertyIds={rentalRequests.map((r) => r.propertyId)}
+          existingRequestPropertyIds={rentalRequests
+            .filter((r) => r.status === 'PENDING')
+            .map((r) => r.propertyId)}
         />
       </div>
     </main>
