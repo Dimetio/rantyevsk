@@ -92,15 +92,28 @@ export async function POST(request: Request) {
       where: {
         tenantId: session.user.id,
         propertyId,
-        status: 'PENDING',
       },
     })
 
     if (existingRequest) {
-      return NextResponse.json(
-        { error: 'Заявка на этот объект уже отправлена' },
-        { status: 400 }
-      )
+      if (existingRequest.status === 'PENDING') {
+        return NextResponse.json(
+          { error: 'Заявка на этот объект уже отправлена' },
+          { status: 400 }
+        )
+      }
+
+      const updated = await prisma.rentalRequest.update({
+        where: { id: existingRequest.id },
+        data: { status: 'PENDING', message: message || null },
+        include: {
+          property: {
+            select: { id: true, title: true, address: true, rentPrice: true },
+          },
+        },
+      })
+
+      return NextResponse.json(updated, { status: 200 })
     }
 
     const rentalRequest = await prisma.rentalRequest.create({
