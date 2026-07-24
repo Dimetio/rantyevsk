@@ -171,6 +171,18 @@ export default function PropertyDetailPage({ params }: { params: { id: string } 
                     <span className="font-medium">{property.tenant.name} ({property.tenant.email})</span>
                   </div>
                 )}
+                {property.rentStart && (
+                  <div>
+                    <span className="text-muted-foreground">Начало аренды: </span>
+                    <span className="font-medium">{new Date(property.rentStart).toLocaleDateString('ru-RU')}</span>
+                  </div>
+                )}
+                {property.rentEnd && (
+                  <div>
+                    <span className="text-muted-foreground">Окончание аренды: </span>
+                    <span className="font-medium">{new Date(property.rentEnd).toLocaleDateString('ru-RU')}</span>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="flex gap-4">

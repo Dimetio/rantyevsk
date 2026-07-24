@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
-/** PATCH /api/rental-requests/[id] — owner одобряет или отклоняет заявку. */
+/** PATCH /api/termination-requests/[id] — подтвердить или отклонить расторжение. */
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
@@ -14,13 +14,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
   }
 
-  if (session.user.role !== 'OWNER') {
-    return NextResponse.json({ error: 'Только собственники могут обрабатывать заявки' }, { status: 403 })
-  }
-
   try {
     const body = await request.json()
-    const { status, rentEnd } = body
+    const { status } = body
 
     if (!status || !['APPROVED', 'REJECTED'].includes(status)) {
       return NextResponse.json(
@@ -29,40 +25,41 @@ export async function PATCH(
       )
     }
 
-    if (status === 'APPROVED' && !rentEnd) {
+    const terminationRequest = await prisma.terminationRequest.findUnique({
+      where: { id: params.id },
+      include: { property: true },
+    })
+
+    if (!terminationRequest) {
+      return NextResponse.json({ error: 'Заявка не найдена' }, { status: 404 })
+    }
+
+    const isOwner = terminationRequest.property.ownerId === session.user.id
+    const isTenant = terminationRequest.property.tenantId === session.user.id
+
+    if (!isOwner && !isTenant) {
+      return NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 })
+    }
+
+    if (terminationRequest.initiatedById === session.user.id) {
       return NextResponse.json(
-        { error: 'При одобрении необходимо указать дату окончания аренды' },
+        { error: 'Нельзя подтвердить собственную заявку на расторжение' },
         { status: 400 }
       )
     }
 
-    const rentalRequest = await prisma.rentalRequest.findUnique({
-      where: { id: params.id },
-      include: {
-        property: true,
-      },
-    })
-
-    if (!rentalRequest) {
-      return NextResponse.json({ error: 'Заявка не найдена' }, { status: 404 })
-    }
-
-    if (rentalRequest.property.ownerId !== session.user.id) {
-      return NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 })
-    }
-
-    if (rentalRequest.status !== 'PENDING') {
+    if (terminationRequest.status !== 'PENDING') {
       return NextResponse.json(
         { error: 'Заявка уже обработана' },
         { status: 400 }
       )
     }
 
-    const updated = await prisma.rentalRequest.update({
+    const updated = await prisma.terminationRequest.update({
       where: { id: params.id },
       data: { status },
       include: {
-        tenant: {
+        initiatedBy: {
           select: { id: true, name: true, email: true },
         },
         property: {
@@ -73,18 +70,18 @@ export async function PATCH(
 
     if (status === 'APPROVED') {
       await prisma.property.update({
-        where: { id: rentalRequest.propertyId },
+        where: { id: terminationRequest.propertyId },
         data: {
-          tenantId: rentalRequest.tenantId,
-          status: 'RENTED',
-          rentStart: new Date(),
-          rentEnd: new Date(rentEnd),
+          tenantId: null,
+          status: 'AVAILABLE',
+          rentStart: null,
+          rentEnd: null,
         },
       })
 
-      await prisma.rentalRequest.updateMany({
+      await prisma.terminationRequest.updateMany({
         where: {
-          propertyId: rentalRequest.propertyId,
+          propertyId: terminationRequest.propertyId,
           id: { not: params.id },
           status: 'PENDING',
         },
@@ -95,7 +92,7 @@ export async function PATCH(
     return NextResponse.json(updated)
   } catch (error) {
     return NextResponse.json(
-      { error: 'Ошибка при обработке заявки' },
+      { error: 'Ошибка при обработке заявки на расторжение' },
       { status: 500 }
     )
   }

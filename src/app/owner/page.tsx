@@ -6,7 +6,9 @@ import { redirect } from 'next/navigation'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
 import { SignOutButton } from '@/components/compound/SignOutButton'
 import prisma from '@/lib/prisma'
+import { checkExpiredRentals } from '@/utils'
 import { IncomingRequests } from './components/IncomingRequests'
+import { TerminationRequestsList } from './components/TerminationRequestsList'
 
 /** Dashboard собственника — главная страница после входа. */
 export default async function OwnerDashboard() {
@@ -20,6 +22,8 @@ export default async function OwnerDashboard() {
     redirect('/tenant')
   }
 
+  await checkExpiredRentals()
+
   const properties = await prisma.property.findMany({
     where: { ownerId: session.user.id },
     include: {
@@ -27,6 +31,7 @@ export default async function OwnerDashboard() {
         select: { name: true },
       },
     },
+    orderBy: { createdAt: 'desc' },
   })
 
   const incomingRequests = await prisma.rentalRequest.findMany({
@@ -40,6 +45,23 @@ export default async function OwnerDashboard() {
       },
       property: {
         select: { id: true, title: true, address: true, rentPrice: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const incomingTerminations = await prisma.terminationRequest.findMany({
+    where: {
+      property: { ownerId: session.user.id },
+      status: 'PENDING',
+      initiatedById: { not: session.user.id },
+    },
+    include: {
+      initiatedBy: {
+        select: { id: true, name: true, email: true },
+      },
+      property: {
+        select: { id: true, title: true, address: true, tenantId: true },
       },
     },
     orderBy: { createdAt: 'desc' },
@@ -70,6 +92,11 @@ export default async function OwnerDashboard() {
         <IncomingRequests requests={incomingRequests.map((r) => ({
           ...r,
           property: { ...r.property, rentPrice: Number(r.property.rentPrice) },
+        }))} />
+
+        <TerminationRequestsList requests={incomingTerminations.map((r) => ({
+          ...r,
+          property: { ...r.property },
         }))} />
 
         <div className="mb-8 flex items-center justify-between">
@@ -145,6 +172,12 @@ export default async function OwnerDashboard() {
                         <div>
                           <span className="text-muted-foreground">Арендатор: </span>
                           <span className="font-medium">{property.tenant.name}</span>
+                        </div>
+                      )}
+                      {property.rentEnd && (
+                        <div>
+                          <span className="text-muted-foreground">Окончание: </span>
+                          <span className="font-medium">{new Date(property.rentEnd).toLocaleDateString('ru-RU')}</span>
                         </div>
                       )}
                     </div>

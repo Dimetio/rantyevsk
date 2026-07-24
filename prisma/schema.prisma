@@ -28,9 +28,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  ownedProperties  Property[]       @relation("OwnerProperties")
-  rentedProperty   Property?        @relation("TenantProperty")
-  rentalRequests   RentalRequest[]  @relation("TenantRequests")
+  ownedProperties     Property[]           @relation("OwnerProperties")
+  rentedProperty      Property?            @relation("TenantProperty")
+  rentalRequests      RentalRequest[]      @relation("TenantRequests")
+  initiatedTerminations TerminationRequest[] @relation("InitiatedTerminations")
 
   @@map("users")
 }
@@ -45,6 +46,8 @@ model Property {
   floor       Int?
   rentPrice   Decimal  @db.Decimal(12, 2)
   status      PropertyStatus @default(AVAILABLE)
+  rentStart   DateTime?
+  rentEnd     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -54,7 +57,8 @@ model Property {
   tenantId String? @unique
   tenant   User?  @relation("TenantProperty", fields: [tenantId], references: [id])
 
-  rentalRequests RentalRequest[] @relation("PropertyRequests")
+  rentalRequests      RentalRequest[]      @relation("PropertyRequests")
+  terminationRequests TerminationRequest[] @relation("PropertyTerminations")
 
   @@index([ownerId])
   @@index([tenantId])
@@ -83,4 +87,21 @@ model RentalRequest {
   @@index([propertyId])
   @@index([tenantId])
   @@map("rental_requests")
+}
+
+model TerminationRequest {
+  id         String        @id @default(cuid())
+  status     RequestStatus @default(PENDING)
+  message    String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  initiatedById String
+  initiatedBy   User   @relation("InitiatedTerminations", fields: [initiatedById], references: [id])
+  propertyId    String
+  property      Property @relation("PropertyTerminations", fields: [propertyId], references: [id])
+
+  @@index([propertyId])
+  @@index([initiatedById])
+  @@map("termination_requests")
 }
