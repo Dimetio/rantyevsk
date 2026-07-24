@@ -37,3 +37,22 @@ export const propertySchema = z.object({
 })
 
 export type PropertyInput = z.infer<typeof propertySchema>
+
+/**
+ * Схема валидации для заявки на аренду.
+ */
+export const rentalRequestSchema = z.object({
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  message: z.string().optional(),
+})
+
+export type RentalRequestInput = z.infer<typeof rentalRequestSchema>
+
+/**
+ * Схема валидации для ответа на заявку (одобрение/отклонение).
+ */
+export const rentalRequestActionSchema = z.object({
+  status: z.enum(['APPROVED', 'REJECTED'], { required_error: 'Выберите действие' }),
+})
+
+export type RentalRequestActionInput = z.infer<typeof rentalRequestActionSchema>

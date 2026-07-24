@@ -1,4 +1,4 @@
-import type { Role, PropertyStatus } from '@prisma/client'
+import type { Role, PropertyStatus, RequestStatus } from '@prisma/client'
 
 /** Тип пользователя в сессии. */
 export interface SessionUser {
@@ -23,4 +23,15 @@ export interface Property {
   updatedAt: Date
   ownerId: string
   tenantId: string | null
+}
+
+/** Тип заявки на аренду. */
+export interface RentalRequest {
+  id: string
+  status: RequestStatus
+  message: string | null
+  createdAt: Date
+  updatedAt: Date
+  tenantId: string
+  propertyId: string
 }

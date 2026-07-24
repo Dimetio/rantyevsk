@@ -30,8 +30,23 @@ export async function GET(
     return NextResponse.json({ error: 'Объект не найден' }, { status: 404 })
   }
 
-  // Проверяем доступ: собственник или арендатор объекта
-  if (property.ownerId !== session.user.id && property.tenantId !== session.user.id) {
+  const isOwner = property.ownerId === session.user.id
+  const isTenant = property.tenantId === session.user.id
+
+  let hasRequest = false
+  if (!isOwner && !isTenant) {
+    const request = await prisma.rentalRequest.findUnique({
+      where: {
+        tenantId_propertyId: {
+          tenantId: session.user.id,
+          propertyId: params.id,
+        },
+      },
+    })
+    hasRequest = !!request
+  }
+
+  if (!isOwner && !isTenant && !hasRequest) {
     return NextResponse.json({ error: 'Доступ запрещён' }, { status: 403 })
   }
 

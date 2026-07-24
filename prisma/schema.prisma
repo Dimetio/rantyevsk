@@ -12,6 +12,12 @@ enum Role {
   TENANT
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -22,8 +28,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  ownedProperties Property[] @relation("OwnerProperties")
-  rentedProperty   Property?  @relation("TenantProperty")
+  ownedProperties  Property[]       @relation("OwnerProperties")
+  rentedProperty   Property?        @relation("TenantProperty")
+  rentalRequests   RentalRequest[]  @relation("TenantRequests")
 
   @@map("users")
 }
@@ -47,6 +54,8 @@ model Property {
   tenantId String? @unique
   tenant   User?  @relation("TenantProperty", fields: [tenantId], references: [id])
 
+  rentalRequests RentalRequest[] @relation("PropertyRequests")
+
   @@index([ownerId])
   @@index([tenantId])
   @@map("properties")
@@ -56,4 +65,22 @@ enum PropertyStatus {
   AVAILABLE
   RENTED
   MAINTENANCE
+}
+
+model RentalRequest {
+  id         String        @id @default(cuid())
+  status     RequestStatus @default(PENDING)
+  message    String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  tenantId   String
+  tenant     User          @relation("TenantRequests", fields: [tenantId], references: [id])
+  propertyId String
+  property   Property      @relation("PropertyRequests", fields: [propertyId], references: [id])
+
+  @@unique([tenantId, propertyId])
+  @@index([propertyId])
+  @@index([tenantId])
+  @@map("rental_requests")
 }

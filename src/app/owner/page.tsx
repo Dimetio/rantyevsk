@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
 import { SignOutButton } from '@/components/compound/SignOutButton'
 import prisma from '@/lib/prisma'
+import { IncomingRequests } from './components/IncomingRequests'
 
 /** Dashboard собственника — главная страница после входа. */
 export default async function OwnerDashboard() {
@@ -26,6 +27,22 @@ export default async function OwnerDashboard() {
         select: { name: true },
       },
     },
+  })
+
+  const incomingRequests = await prisma.rentalRequest.findMany({
+    where: {
+      property: { ownerId: session.user.id },
+      status: 'PENDING',
+    },
+    include: {
+      tenant: {
+        select: { id: true, name: true, email: true },
+      },
+      property: {
+        select: { id: true, title: true, address: true, rentPrice: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
   })
 
   const totalProperties = properties.length
@@ -49,7 +66,12 @@ export default async function OwnerDashboard() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
+        <IncomingRequests requests={incomingRequests.map((r) => ({
+          ...r,
+          property: { ...r.property, rentPrice: Number(r.property.rentPrice) },
+        }))} />
+
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Мои объекты</h2>
           <Link href="/owner/properties/new">
