@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Label } from '@/components/ui'
 
@@ -29,6 +30,7 @@ interface IncomingRequestsProps {
 export function IncomingRequests({ requests }: IncomingRequestsProps) {
   const [items, setItems] = useState(requests)
   const [processing, setProcessing] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleApprove(requestId: string, rentEnd: string) {
     setProcessing(requestId)
@@ -48,6 +50,7 @@ export function IncomingRequests({ requests }: IncomingRequestsProps) {
       }
 
       setItems((prev) => prev.filter((r) => r.id !== requestId))
+      router.refresh()
     } catch {
       alert('Произошла ошибка')
     } finally {
@@ -72,6 +75,7 @@ export function IncomingRequests({ requests }: IncomingRequestsProps) {
       }
 
       setItems((prev) => prev.filter((r) => r.id !== requestId))
+      router.refresh()
     } catch {
       alert('Произошла ошибка')
     } finally {

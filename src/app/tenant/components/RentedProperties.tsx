@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Label } from '@/components/ui'
 
@@ -30,6 +31,7 @@ export function RentedProperties({ properties }: RentedPropertiesProps) {
   const [processing, setProcessing] = useState<string | null>(null)
   const [terminatingId, setTerminatingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
+  const router = useRouter()
 
   async function handleTerminate(propertyId: string) {
     setProcessing(propertyId)
@@ -51,6 +53,7 @@ export function RentedProperties({ properties }: RentedPropertiesProps) {
       setTerminatingId(null)
       setMessage('')
       alert('Заявка на расторжение отправлена. Ожидайте подтверждения собственника.')
+      router.refresh()
     } catch {
       alert('Произошла ошибка')
     } finally {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
 
@@ -28,6 +29,7 @@ interface TerminationRequestsListProps {
 export function TerminationRequestsList({ requests }: TerminationRequestsListProps) {
   const [items, setItems] = useState(requests)
   const [processing, setProcessing] = useState<string | null>(null)
+  const router = useRouter()
 
   async function handleAction(requestId: string, status: 'APPROVED' | 'REJECTED') {
     setProcessing(requestId)
@@ -47,6 +49,7 @@ export function TerminationRequestsList({ requests }: TerminationRequestsListPro
       }
 
       setItems((prev) => prev.filter((r) => r.id !== requestId))
+      router.refresh()
     } catch {
       alert('Произошла ошибка')
     } finally {
