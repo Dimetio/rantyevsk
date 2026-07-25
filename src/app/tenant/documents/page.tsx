@@ -58,6 +58,7 @@ export default async function TenantDocumentsPage() {
           documents={documents.map((d) => ({
             ...d,
             createdAt: d.createdAt.toISOString(),
+            updatedAt: d.updatedAt.toISOString(),
           }))}
           userRole="TENANT"
         />

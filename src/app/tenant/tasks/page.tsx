@@ -62,6 +62,7 @@ export default async function TenantTasksPage() {
           tasks={tasks.map((t) => ({
             ...t,
             createdAt: t.createdAt.toISOString(),
+            updatedAt: t.updatedAt.toISOString(),
             dueDate: t.dueDate?.toISOString() ?? null,
           }))}
           userRole="TENANT"

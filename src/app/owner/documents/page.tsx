@@ -66,6 +66,7 @@ export default async function OwnerDocumentsPage() {
           documents={documents.map((d) => ({
             ...d,
             createdAt: d.createdAt.toISOString(),
+            updatedAt: d.updatedAt.toISOString(),
           }))}
           userRole="OWNER"
         />

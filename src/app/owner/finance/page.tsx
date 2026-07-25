@@ -134,6 +134,8 @@ export default async function OwnerFinancePage() {
             <PaymentsList payments={payments.map((p) => ({
               ...p,
               amount: Number(p.amount),
+              createdAt: p.createdAt.toISOString(),
+              updatedAt: p.updatedAt.toISOString(),
               dueDate: p.dueDate.toISOString(),
               paidDate: p.paidDate?.toISOString() ?? null,
             }))} />
@@ -147,6 +149,8 @@ export default async function OwnerFinancePage() {
             <ExpensesList expenses={expenses.map((e) => ({
               ...e,
               amount: Number(e.amount),
+              createdAt: e.createdAt.toISOString(),
+              updatedAt: e.updatedAt.toISOString(),
               date: e.date.toISOString(),
             }))} />
           </div>

@@ -89,6 +89,8 @@ export default async function TenantPaymentsPage() {
         <TenantPaymentsList payments={payments.map((p) => ({
           ...p,
           amount: Number(p.amount),
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString(),
           dueDate: p.dueDate.toISOString(),
           paidDate: p.paidDate?.toISOString() ?? null,
           property: {
