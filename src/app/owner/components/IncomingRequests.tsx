@@ -8,7 +8,7 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Inpu
 interface Request {
   id: string
   message: string | null
-  createdAt: Date
+  createdAt: string
   tenant: {
     id: string
     name: string

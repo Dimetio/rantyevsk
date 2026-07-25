@@ -78,7 +78,7 @@ export async function PATCH(
           tenantId: rentalRequest.tenantId,
           status: 'RENTED',
           rentStart: new Date(),
-          rentEnd: new Date(rentEnd),
+          rentEnd: new Date(rentEnd + 'T23:59:59.999Z'),
         },
       })
 

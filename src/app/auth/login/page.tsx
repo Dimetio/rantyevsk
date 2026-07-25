@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 
 import { Button, Input, Label, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui'
 import { loginSchema } from '@/validations'
@@ -45,7 +45,13 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/owner')
+    const session = await getSession()
+
+    if (session?.user?.role === 'TENANT') {
+      router.push('/tenant')
+    } else {
+      router.push('/owner')
+    }
     router.refresh()
   }
 

@@ -8,7 +8,7 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } fro
 interface TerminationRequest {
   id: string
   message: string | null
-  createdAt: Date
+  createdAt: string
   initiatedBy: {
     id: string
     name: string

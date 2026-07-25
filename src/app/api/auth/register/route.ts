@@ -2,19 +2,22 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 
 import prisma from '@/lib/prisma'
+import { registerSchema } from '@/validations'
 
 /** POST /api/auth/register — регистрация нового пользователя. */
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, email, password, role } = body
 
-    if (!name || !email || !password || !role) {
+    const result = registerSchema.safeParse(body)
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Все поля обязательны для заполнения' },
+        { error: result.error.errors[0].message },
         { status: 400 }
       )
     }
+
+    const { name, email, password, role } = result.data
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
         name,
         email,
         passwordHash,
-        role: role as 'OWNER' | 'TENANT',
+        role,
       },
     })
 

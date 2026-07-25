@@ -1,6 +1,9 @@
+import Link from 'next/link'
+
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
+import { Button } from '@/components/ui'
 import { SignOutButton } from '@/components/compound/SignOutButton'
 import prisma from '@/lib/prisma'
 import { checkExpiredRentals } from '@/utils'
@@ -83,6 +86,7 @@ export default async function TenantDashboard() {
 
   const serializedRequests = rentalRequests.map((r) => ({
     ...r,
+    createdAt: r.createdAt.toISOString(),
     property: {
       ...r.property,
       rentPrice: Number(r.property.rentPrice),
@@ -98,17 +102,35 @@ export default async function TenantDashboard() {
             <p className="text-sm text-muted-foreground">Личный кабинет арендатора</p>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm">{session.user.name}</span>
+            <Link href="/tenant/profile">
+              <Button variant="ghost" size="sm">{session.user.name}</Button>
+            </Link>
             <SignOutButton />
           </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
+        <div className="flex justify-end gap-2">
+          <Link href="/tenant/tasks">
+            <Button variant="outline">Мои задачи</Button>
+          </Link>
+          <Link href="/tenant/documents">
+            <Button variant="outline">Документы</Button>
+          </Link>
+          <Link href="/tenant/tickets">
+            <Button variant="outline">Мои заявки</Button>
+          </Link>
+          <Link href="/tenant/payments">
+            <Button variant="outline">Мои платежи</Button>
+          </Link>
+        </div>
+
         <RentedProperties properties={serializedRentedProperties} />
 
         <TerminationRequestsList requests={incomingTerminations.map((r) => ({
           ...r,
+          createdAt: r.createdAt.toISOString(),
           property: { ...r.property },
         }))} />
 

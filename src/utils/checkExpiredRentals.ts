@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 /**
  * Проверяет и автоматически завершает аренду для объектов с истёкшим сроком.
  * Вызывается при обращении к dashboard.
+ * Использует атомарные операции для защиты от race condition.
  */
 export async function checkExpiredRentals() {
   const expiredProperties = await prisma.property.findMany({
@@ -14,25 +15,31 @@ export async function checkExpiredRentals() {
     },
   })
 
-  for (const property of expiredProperties) {
-    await prisma.property.update({
-      where: { id: property.id },
+  if (expiredProperties.length === 0) return 0
+
+  const expiredIds = expiredProperties.map((p) => p.id)
+
+  await prisma.$transaction([
+    prisma.property.updateMany({
+      where: {
+        id: { in: expiredIds },
+        status: 'RENTED',
+      },
       data: {
         tenantId: null,
         status: 'AVAILABLE',
         rentStart: null,
         rentEnd: null,
       },
-    })
-
-    await prisma.terminationRequest.updateMany({
+    }),
+    prisma.terminationRequest.updateMany({
       where: {
-        propertyId: property.id,
+        propertyId: { in: expiredIds },
         status: 'PENDING',
       },
       data: { status: 'APPROVED' },
-    })
-  }
+    }),
+  ])
 
-  return expiredProperties.length
+  return expiredIds.length
 }

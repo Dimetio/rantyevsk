@@ -56,3 +56,113 @@ export const rentalRequestActionSchema = z.object({
 })
 
 export type RentalRequestActionInput = z.infer<typeof rentalRequestActionSchema>
+
+/**
+ * Схема валидации для обновления профиля.
+ */
+export const profileSchema = z.object({
+  name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),
+  phone: z.string().optional(),
+})
+
+export type ProfileInput = z.infer<typeof profileSchema>
+
+/**
+ * Схема валидации для платежа.
+ */
+export const paymentSchema = z.object({
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  amount: z.coerce.number().positive('Сумма должна быть положительной'),
+  dueDate: z.string().min(1, 'Дата обязательна'),
+  message: z.string().optional(),
+})
+
+export type PaymentInput = z.infer<typeof paymentSchema>
+
+/**
+ * Схема валидации для обновления статуса платежа.
+ */
+export const paymentActionSchema = z.object({
+  status: z.enum(['PAID', 'OVERDUE'], { required_error: 'Выберите действие' }),
+})
+
+export type PaymentActionInput = z.infer<typeof paymentActionSchema>
+
+/**
+ * Схема валидации для расхода.
+ */
+export const expenseSchema = z.object({
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  amount: z.coerce.number().positive('Сумма должна быть положительной'),
+  category: z.enum(['REPAIR', 'UTILITIES', 'MAINTENANCE', 'OTHER']).default('OTHER'),
+  description: z.string().min(1, 'Описание обязательно'),
+  date: z.string().optional(),
+})
+
+export type ExpenseInput = z.infer<typeof expenseSchema>
+
+/**
+ * Схема валидации для заявки (обращения).
+ */
+export const ticketSchema = z.object({
+  title: z.string().min(1, 'Введите тему обращения'),
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  message: z.string().min(1, 'Введите сообщение'),
+})
+
+export type TicketInput = z.infer<typeof ticketSchema>
+
+/**
+ * Схема валидации для сообщения в заявке.
+ */
+export const ticketMessageSchema = z.object({
+  text: z.string().min(1, 'Введите сообщение'),
+})
+
+export type TicketMessageInput = z.infer<typeof ticketMessageSchema>
+
+/**
+ * Схема валидации для обновления статуса заявки.
+ */
+export const ticketActionSchema = z.object({
+  status: z.enum(['IN_PROGRESS', 'RESOLVED', 'CLOSED'], { required_error: 'Выберите статус' }),
+})
+
+export type TicketActionInput = z.infer<typeof ticketActionSchema>
+
+/**
+ * Схема валидации для задачи.
+ */
+export const taskSchema = z.object({
+  title: z.string().min(1, 'Введите название задачи'),
+  description: z.string().optional(),
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  assignedToId: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  dueDate: z.string().optional(),
+})
+
+export type TaskInput = z.infer<typeof taskSchema>
+
+/**
+ * Схема валидации для обновления статуса задачи.
+ */
+export const taskActionSchema = z.object({
+  status: z.enum(['TODO', 'IN_PROGRESS', 'DONE'], { required_error: 'Выберите статус' }),
+})
+
+export type TaskActionInput = z.infer<typeof taskActionSchema>
+
+/**
+ * Схема валидации для документа.
+ */
+export const documentSchema = z.object({
+  title: z.string().min(1, 'Введите название документа'),
+  type: z.enum(['CONTRACT', 'ACT', 'RECEIPT', 'OTHER']).default('OTHER'),
+  propertyId: z.string().min(1, 'ID объекта обязателен'),
+  fileUrl: z.string().min(1, 'URL файла обязателен'),
+  fileName: z.string().min(1, 'Имя файла обязательно'),
+  fileSize: z.number().optional(),
+})
+
+export type DocumentInput = z.infer<typeof documentSchema>

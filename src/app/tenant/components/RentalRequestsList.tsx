@@ -4,7 +4,7 @@ interface Request {
   id: string
   status: string
   message: string | null
-  createdAt: Date
+  createdAt: string
   property: {
     id: string
     title: string

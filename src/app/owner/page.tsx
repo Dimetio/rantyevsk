@@ -91,19 +91,38 @@ export default async function OwnerDashboard() {
       <div className="mx-auto max-w-7xl px-6 py-8 space-y-8">
         <IncomingRequests requests={incomingRequests.map((r) => ({
           ...r,
+          createdAt: r.createdAt.toISOString(),
           property: { ...r.property, rentPrice: Number(r.property.rentPrice) },
         }))} />
 
         <TerminationRequestsList requests={incomingTerminations.map((r) => ({
           ...r,
+          createdAt: r.createdAt.toISOString(),
           property: { ...r.property },
         }))} />
 
-        <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Мои объекты</h2>
-          <Link href="/owner/properties/new">
-            <Button>+ Добавить объект</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/owner/tasks">
+              <Button variant="outline">Задачи</Button>
+            </Link>
+            <Link href="/owner/documents">
+              <Button variant="outline">Документы</Button>
+            </Link>
+            <Link href="/owner/tickets">
+              <Button variant="outline">Заявки</Button>
+            </Link>
+            <Link href="/owner/finance">
+              <Button variant="outline">Финансы</Button>
+            </Link>
+            <Link href="/owner/tenants">
+              <Button variant="outline">Мои арендаторы</Button>
+            </Link>
+            <Link href="/owner/properties/new">
+              <Button>+ Добавить объект</Button>
+            </Link>
+          </div>
         </div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
