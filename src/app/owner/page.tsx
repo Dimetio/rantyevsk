@@ -104,6 +104,9 @@ export default async function OwnerDashboard() {
           <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Мои объекты</h2>
           <div className="flex gap-2">
+            <Link href="/owner/analytics">
+              <Button variant="outline">Аналитика</Button>
+            </Link>
             <Link href="/owner/tasks">
               <Button variant="outline">Задачи</Button>
             </Link>
